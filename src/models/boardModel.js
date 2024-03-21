@@ -84,17 +84,10 @@ const getDetails = async(id) => {
 // Nhiệm vụ của func này là push một cái giá trị columnId vào cuối mảng columnOrderIds
 const pushColumnOrderIds = async (column, updateData) => {
   try {
-    // Lọc những field mà chúng ta không cho phép cập nhật linh tinh 
-    Object.keys(updateData).forEach(fieldName => {
-      if (INVALID_UPDATE_FIELDS.includes(fieldName)) {
-        delete updateData[fieldName]
-      }
-    })
-
     const result = await GET_DB().collection(BOARD_COLLECTION_NAME).findOneAndUpdate(
       { _id: new ObjectId(column.boardId) },
       { $push: { columnOrderIds: new ObjectId(column._id) } },
-      { returnDocument: 'after' } // sẽ trả về kết quả mới sau khi cập nhật
+      { returnDocument: 'after' }
     )
     return result
   } catch (error) { throw new Error(error) }
@@ -102,10 +95,16 @@ const pushColumnOrderIds = async (column, updateData) => {
 
 const update = async (boardId, updateData) => {
   try {
+    // Lọc những field mà chúng ta không cho phép cập nhật linh tinh
+    Object.keys(updateData).forEach(fieldName => {
+      if (INVALID_UPDATE_FIELDS.includes(fieldName)) {
+        delete updateData[fieldName]
+      }
+    })
     const result = await GET_DB().collection(BOARD_COLLECTION_NAME).findOneAndUpdate(
       { _id: new ObjectId(boardId) },
       { $set: updateData },
-      { returnDocument: 'after' }
+      { returnDocument: 'after' } // sẽ trả về kết quả mới sau khi cập nhật
     )
     return result
   } catch (error) { throw new Error(error) }
