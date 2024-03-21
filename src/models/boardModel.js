@@ -82,7 +82,7 @@ const getDetails = async(id) => {
 }
 
 // Nhiệm vụ của func này là push một cái giá trị columnId vào cuối mảng columnOrderIds
-const pushColumnOrderIds = async (column, updateData) => {
+const pushColumnOrderIds = async (column) => {
   try {
     const result = await GET_DB().collection(BOARD_COLLECTION_NAME).findOneAndUpdate(
       { _id: new ObjectId(column.boardId) },
