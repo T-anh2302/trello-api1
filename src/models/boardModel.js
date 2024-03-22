@@ -46,9 +46,9 @@ const createNew = async(data) => {
   } catch (error) { throw new Error(error) }
 }
 
-const findOneById = async(id) => {
+const findOneById = async(BoardId) => {
   try {
-    const result = await GET_DB().collection(BOARD_COLLECTION_NAME).findOne({ _id: new ObjectId(id) })
+    const result = await GET_DB().collection(BOARD_COLLECTION_NAME).findOne({ _id: new ObjectId(BoardId) })
     return result
   } catch (error) { throw new Error(error) }
 }
@@ -81,12 +81,26 @@ const getDetails = async(id) => {
   } catch (error) { throw new Error(error) }
 }
 
-// Nhiệm vụ của func này là push một cái giá trị columnId vào cuối mảng columnOrderIds
+// Đẩy một phần tử columnId ra khỏi mảng columnOrderIds
+// Dùng $push trong mongodb ở trường hợp này đẩy 1 phần tử vào cuối mảng
 const pushColumnOrderIds = async (column) => {
   try {
     const result = await GET_DB().collection(BOARD_COLLECTION_NAME).findOneAndUpdate(
       { _id: new ObjectId(column.boardId) },
       { $push: { columnOrderIds: new ObjectId(column._id) } },
+      { returnDocument: 'after' }
+    )
+    return result
+  } catch (error) { throw new Error(error) }
+}
+
+// Lấy một phần tử columnId ra khỏi mảng columnOrderIds
+// Dùng $pull trong mongodb ở trường hợp này để lấy một phần tử ra khỏi mảng rồi xóa nó đi
+const pullColumnOrderIds = async (column) => {
+  try {
+    const result = await GET_DB().collection(BOARD_COLLECTION_NAME).findOneAndUpdate(
+      { _id: new ObjectId(column.boardId) },
+      { $pull: { columnOrderIds: new ObjectId(column._id) } },
       { returnDocument: 'after' }
     )
     return result
@@ -101,6 +115,12 @@ const update = async (boardId, updateData) => {
         delete updateData[fieldName]
       }
     })
+
+    // Đối với những dữ liệu liên quan ObjectId, biến đổi ở đây
+    if (updateData.columnOrderIds) {
+      updateData.columnOrderIds = updateData.columnOrderIds.map(_id => (new ObjectId(_id)))
+    }
+
     const result = await GET_DB().collection(BOARD_COLLECTION_NAME).findOneAndUpdate(
       { _id: new ObjectId(boardId) },
       { $set: updateData },
@@ -117,5 +137,6 @@ export const boardModel = {
   findOneById,
   getDetails,
   pushColumnOrderIds,
-  update
+  update,
+  pullColumnOrderIds
 }
